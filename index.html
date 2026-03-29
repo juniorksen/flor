@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Una flor para ti </title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --rose: #e8547a;
+      --rose-light: #f9c6d3;
+      --rose-dark: #b03060;
+      --gold: #c9a84c;
+      --cream: #fff8f0;
+      --green: #4a7c59;
+      --leaf: #6aad7e;
+      --bg: #1a0a10;
+      --text: #ffe8ef;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      font-family: 'Lato', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* ── Partículas ── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      /* sin opacity:0 → siempre visibles desde el inicio */
+      animation: float-particle linear infinite;
+    }
+    @keyframes float-particle {
+      0%   { transform: translateY(110vh) scale(0.4); opacity: 0; }
+      8%   { opacity: 0.7; }
+      88%  { opacity: 0.4; }
+      100% { transform: translateY(-10vh) scale(1.3); opacity: 0; }
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 3rem 2rem 1rem;
+      max-width: 700px;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      color: var(--rose-light);
+      letter-spacing: 0.02em;
+      margin-bottom: 0.5rem;
+      animation: fade-down 1s ease both;
+    }
+    header p {
+      font-weight: 300;
+      font-size: 1rem;
+      color: #d4a0b0;
+      animation: fade-down 1s 0.3s ease both;
+      font-style: italic;
+    }
+    @keyframes fade-down {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Canvas area */
+    .canvas-wrap {
+      position: relative;
+      z-index: 2;
+      width: min(520px, 92vw);
+      aspect-ratio: 1;
+      margin: 2rem auto 1.5rem;
+      background: radial-gradient(ellipse at 40% 30%, #2d0d1a 0%, #0f0508 100%);
+      border-radius: 50%;
+      border: 2px solid rgba(232, 84, 122, 0.25);
+      box-shadow: 0 0 60px rgba(232, 84, 122, 0.12), 0 0 120px rgba(232, 84, 122, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fade-down 1s 0.5s ease both;
+      overflow: hidden;
+    }
+    svg#flower-svg {
+      width: 85%;
+      height: 85%;
+      overflow: visible;
+    }
+
+    /* Paso tracker */
+    .step-info {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      margin-bottom: 1rem;
+      animation: fade-down 1s 0.7s ease both;
+    }
+    .step-label {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: var(--gold);
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .step-desc {
+      font-size: 1.05rem;
+      color: var(--rose-light);
+      min-height: 1.6em;
+      transition: opacity 0.4s;
+    }
+
+    /* Barra de progreso */
+    .progress-bar-wrap {
+      position: relative;
+      z-index: 2;
+      width: min(360px, 80vw);
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      margin: 0 auto 2rem;
+      animation: fade-down 1s 0.8s ease both;
+      overflow: visible;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      background: linear-gradient(90deg, var(--rose-dark), var(--rose), var(--gold));
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 10px var(--rose);
+    }
+
+    /* Dots */
+    .dots {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+      animation: fade-down 1s 0.9s ease both;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      transition: background 0.4s, transform 0.3s;
+      cursor: pointer;
+    }
+    .dot.active { background: var(--rose); transform: scale(1.4); box-shadow: 0 0 8px var(--rose); }
+    .dot.done   { background: var(--rose-dark); }
+
+    /* Botón */
+    .btn-wrap {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 3rem;
+      animation: fade-down 1s 1s ease both;
+    }
+    button {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      padding: 0.75rem 2.2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.05em;
+    }
+    #btn-next {
+      background: linear-gradient(135deg, var(--rose-dark), var(--rose));
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(232,84,122,0.4);
+    }
+    #btn-next:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(232,84,122,0.55); }
+    #btn-reset {
+      background: transparent;
+      color: #d4a0b0;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    #btn-reset:hover { border-color: var(--rose); color: var(--rose-light); }
+
+    /* Mensaje final */
+    #mensaje-final {
+      display: none;
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 0 2rem 3rem;
+      max-width: 560px;
+      animation: reveal 1s ease both;
+    }
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #mensaje-final .heart { font-size: 3rem; margin-bottom: 1rem; animation: heartbeat 1.2s infinite; }
+    @keyframes heartbeat {
+      0%,100% { transform: scale(1); }
+      30%      { transform: scale(1.2); }
+      60%      { transform: scale(1.1); }
+    }
+    #mensaje-final h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      color: var(--rose-light);
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+    #mensaje-final p {
+      font-weight: 300;
+      font-size: 1rem;
+      color: #c9a0b0;
+      line-height: 1.8;
+      max-width: 420px;
+      margin: 0 auto 2rem;
+    }
+
+    /* SVG element transitions */
+    .flower-part { opacity: 0; transition: opacity 0.6s ease; }
+    .flower-part.visible { opacity: 1; }
+
+    @keyframes petal-glow {
+      0%,100% { filter: drop-shadow(0 0 4px rgba(232,84,122,0.3)); }
+      50%      { filter: drop-shadow(0 0 12px rgba(232,84,122,0.7)); }
+    }
+    .petal-group.visible { animation: petal-glow 2.5s ease infinite; }
+
+    /* Confetti */
+    .confetti-piece {
+      position: fixed;
+      border-radius: 2px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
+      animation: confetti-fall 3s ease forwards;
+    }
+    @keyframes confetti-fall {
+      0%   { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<header>
+  <h1>Una flor para ti </h1>
+  <p>Fiori :p </p>
+</header>
+
+<div class="canvas-wrap">
+  <svg id="flower-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="petalGrad" cx="50%" cy="30%" r="70%">
+        <stop offset="0%"   stop-color="#f9c6d3"/>
+        <stop offset="60%"  stop-color="#e8547a"/>
+        <stop offset="100%" stop-color="#b03060"/>
+      </radialGradient>
+      <radialGradient id="centerGrad" cx="40%" cy="35%" r="65%">
+        <stop offset="0%"   stop-color="#ffe8a0"/>
+        <stop offset="100%" stop-color="#c9a84c"/>
+      </radialGradient>
+      <linearGradient id="stemGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#4a7c59"/>
+        <stop offset="100%" stop-color="#6aad7e"/>
+      </linearGradient>
+      <filter id="soft-glow">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <g class="flower-part" id="part-stem">
+      <path d="M150 290 Q148 240 152 190 Q154 160 150 130" stroke="url(#stemGrad)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    </g>
+    <g class="flower-part" id="part-leaves">
+      <path d="M149 220 Q120 200 105 215 Q115 230 149 228" fill="#4a7c59" opacity="0.9"/>
+      <path d="M149 220 Q130 208 115 217" stroke="#6aad7e" stroke-width="1" fill="none"/>
+      <path d="M151 195 Q178 175 195 185 Q185 200 151 200" fill="#6aad7e" opacity="0.85"/>
+      <path d="M151 195 Q172 180 188 188" stroke="#4a7c59" stroke-width="1" fill="none"/>
+    </g>
+    <g class="flower-part petal-group" id="part-petals-back" filter="url(#soft-glow)">
+      <ellipse cx="150" cy="118" rx="18" ry="34" fill="#c9607a" opacity="0.6"  transform="rotate(-40 150 130)"/>
+      <ellipse cx="150" cy="118" rx="18" ry="34" fill="#c9607a" opacity="0.6"  transform="rotate(40 150 130)"/>
+      <ellipse cx="150" cy="118" rx="18" ry="34" fill="#c9607a" opacity="0.55" transform="rotate(130 150 130)"/>
+      <ellipse cx="150" cy="118" rx="18" ry="34" fill="#c9607a" opacity="0.55" transform="rotate(-130 150 130)"/>
+    </g>
+    <g class="flower-part petal-group" id="part-petals-front" filter="url(#soft-glow)">
+      <ellipse cx="150" cy="96" rx="20" ry="36" fill="url(#petalGrad)" transform="rotate(0 150 130)"/>
+      <ellipse cx="150" cy="96" rx="20" ry="36" fill="url(#petalGrad)" transform="rotate(72 150 130)"/>
+      <ellipse cx="150" cy="96" rx="20" ry="36" fill="url(#petalGrad)" transform="rotate(144 150 130)"/>
+      <ellipse cx="150" cy="96" rx="20" ry="36" fill="url(#petalGrad)" transform="rotate(216 150 130)"/>
+      <ellipse cx="150" cy="96" rx="20" ry="36" fill="url(#petalGrad)" transform="rotate(288 150 130)"/>
+    </g>
+    <g class="flower-part" id="part-center" filter="url(#soft-glow)">
+      <circle cx="150" cy="130" r="22" fill="url(#centerGrad)"/>
+      <circle cx="150" cy="123" r="2.5" fill="#8a6010" opacity="0.7"/>
+      <circle cx="143" cy="128" r="2"   fill="#8a6010" opacity="0.6"/>
+      <circle cx="157" cy="128" r="2"   fill="#8a6010" opacity="0.6"/>
+      <circle cx="145" cy="136" r="2"   fill="#8a6010" opacity="0.6"/>
+      <circle cx="155" cy="136" r="2"   fill="#8a6010" opacity="0.6"/>
+      <circle cx="150" cy="140" r="2.5" fill="#8a6010" opacity="0.7"/>
+    </g>
+    <g class="flower-part" id="part-glow">
+      <ellipse cx="150" cy="102" rx="6" ry="14" fill="white" opacity="0.18" transform="rotate(0 150 130)"/>
+      <text x="82"  y="110" font-size="12" fill="#f9c6d3" opacity="0.7">✦</text>
+      <text x="208" y="118" font-size="10" fill="#f9c6d3" opacity="0.5">✦</text>
+      <text x="95"  y="165" font-size="8"  fill="#c9a84c" opacity="0.6">✦</text>
+      <text x="198" y="155" font-size="9"  fill="#c9a84c" opacity="0.5">✦</text>
+    </g>
+  </svg>
+</div>
+
+<div class="step-info">
+  <div class="step-label"><span id="step-num"></span></div>
+  <div class="step-desc" id="step-desc"></div>
+</div>
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+</div>
+<div class="dots" id="dots">
+  <div class="dot" data-i="1"></div>
+  <div class="dot" data-i="2"></div>
+  <div class="dot" data-i="3"></div>
+  <div class="dot" data-i="4"></div>
+  <div class="dot" data-i="5"></div>
+  <div class="dot" data-i="6"></div>
+</div>
+
+<div id="mensaje-final"></div>
+
+<script>
+  // ── Partículas siempre cayendo ──────────────────────────────────────────────
+  const particleContainer = document.getElementById('particles');
+  const colors = ['#e8547a','#f9c6d3','#c9a84c','#b03060','#ffe8ef'];
+  const TOTAL = 35;
+
+  for (let i = 0; i < TOTAL; i++) {
+    spawnParticle(i * (20000 / TOTAL)); // escalonadas para cubrir toda la pantalla desde el inicio
+  }
+
+  function spawnParticle(initialDelay) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size     = Math.random() * 5 + 2;
+    const duration = 9 + Math.random() * 12; // segundos que tarda en subir
+
+    p.style.cssText = `
+      width:${size}px;
+      height:${size}px;
+      left:${Math.random() * 100}%;
+      background:${colors[Math.floor(Math.random() * colors.length)]};
+      animation-duration:${duration}s;
+      animation-delay:-${initialDelay / 1000}s; /* negativo = ya empezó */
+    `;
+    particleContainer.appendChild(p);
+
+    // Al terminar cada ciclo la partícula ya hace loop sola (infinite),
+    // pero reposicionamos la X para variedad visual
+    p.addEventListener('animationiteration', () => {
+      p.style.left = Math.random() * 100 + '%';
+    });
+  }
+
+  // ── Pasos ───────────────────────────────────────────────────────────────────
+  const steps = [
+    { id: 'part-stem',         desc: '' },
+    { id: 'part-leaves',       desc: '' },
+    { id: 'part-petals-back',  desc: '' },
+    { id: 'part-petals-front', desc: '' },
+    { id: 'part-center',       desc: '' },
+    { id: 'part-glow',         desc: '' },
+  ];
+  let current = 0;
+  const stepNum  = document.getElementById('step-num');
+  const stepDesc = document.getElementById('step-desc');
+  const progFill = document.getElementById('progress-fill');
+  const dotsEl   = document.querySelectorAll('.dot');
+  const msgFinal = document.getElementById('mensaje-final');
+
+  function updateDots() {
+    dotsEl.forEach((d, i) => {
+      d.classList.remove('active','done');
+      if (i + 1 === current) d.classList.add('active');
+      if (i + 1 < current)  d.classList.add('done');
+    });
+  }
+
+  function nextStep() {
+    if (current >= steps.length) return;
+    const step = steps[current];
+    const el = document.getElementById(step.id);
+    if (el) el.classList.add('visible');
+    current++;
+    stepNum.textContent = current;
+    stepDesc.style.opacity = 0;
+    setTimeout(() => { stepDesc.textContent = step.desc; stepDesc.style.opacity = 1; }, 200);
+    progFill.style.width = (current / steps.length * 100) + '%';
+    updateDots();
+    if (current === steps.length) {
+      setTimeout(() => { msgFinal.style.display = 'block'; launchConfetti(); }, 800);
+    }
+  }
+
+  function autoPlay() {
+    nextStep();
+    if (current < steps.length) setTimeout(autoPlay, 1200);
+  }
+
+  function launchConfetti() {
+    const confColors = ['#e8547a','#f9c6d3','#c9a84c','#b03060','#ffe8ef','#ffffff'];
+    for (let i = 0; i < 60; i++) {
+      setTimeout(() => {
+        const c = document.createElement('div');
+        c.className = 'confetti-piece';
+        c.style.cssText = `
+          left:${Math.random()*100}vw; top:0;
+          background:${confColors[Math.floor(Math.random()*confColors.length)]};
+          width:${6+Math.random()*8}px; height:${6+Math.random()*8}px;
+          border-radius:${Math.random()>0.5?'50%':'2px'};
+          animation-duration:${2+Math.random()*2}s;
+        `;
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4000);
+      }, i * 40);
+    }
+  }
+
+  window.addEventListener('load', () => setTimeout(autoPlay, 800));
+</script>
+</body>
+</html>
